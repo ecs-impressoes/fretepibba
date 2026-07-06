@@ -107,42 +107,6 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 15px;
-        }
-
-        .cep-info {
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 0.9rem;
-            display: none;
-            border-left: 4px solid #4caf50;
-        }
-
-        .cep-info.ativo {
-            display: block;
-            animation: slideDown 0.3s;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .cep-info strong {
-            color: #2e7d32;
-        }
-
         .origin-box {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -297,24 +261,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        .alert {
-            padding: 12px 20px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-        }
-
-        .alert-error {
-            background: #fee;
-            color: #c33;
-            border-left: 4px solid #c33;
-        }
-
-        .alert-success {
-            background: #efe;
-            color: #3c3;
-            border-left: 4px solid #3c3;
-        }
     </style>
 </head>
 <body>
@@ -325,7 +271,6 @@
         </header>
 
         <div class="main-grid">
-            <!-- Coluna Esquerda: Formulário e Mapa -->
             <div>
                 <div class="card">
                     <h2>📍 Dados da Entrega</h2>
@@ -342,7 +287,7 @@
                     <div class="form-group">
                         <label>🎯 CEP de Destino</label>
                         <input type="text" id="cep" placeholder="00000-000" maxlength="9" onblur="buscarCEP()">
-                        <div id="cepInfo" class="cep-info"></div>
+                        <div id="cepInfo" style="margin-top: 10px; font-size: 0.9rem;"></div>
                     </div>
 
                     <div class="form-group">
@@ -371,7 +316,6 @@
                 </div>
             </div>
 
-            <!-- Coluna Direita: Resultados e PIX -->
             <div>
                 <div class="card" id="resultadoCard">
                     <h2>💳 Resumo e Pagamento</h2>
@@ -389,7 +333,7 @@
 
                         <div class="detalhes">
                             <p><strong>📍 Destino:</strong> <span id="enderecoDestino">-</span></p>
-                            <p><strong>📏 Distância:</strong> <span id="distancia">0</span> km</p>
+                            <p><strong> Distância:</strong> <span id="distancia">0</span> km</p>
                             <p><strong>⏱️ Tempo Estimado:</strong> <span id="tempo">0</span> minutos</p>
                             <p><strong>🔄 Tipo:</strong> <span id="tipoTexto">Apenas Ida</span></p>
                             <p><strong>💵 Valor por KM:</strong> R$ 2,00</p>
@@ -426,7 +370,6 @@
         const NOME_MERCHANT = "FRETE CUBATAO";
         const CIDADE_MERCHANT = "CUBATAO";
 
-        // Inicializa o mapa
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 13,
@@ -452,17 +395,16 @@
                 position: { lat: -23.8759, lng: -46.5175 },
                 map: map,
                 title: "Origem - Av. Brasil, 284",
-                label: "📦"
+                label: ""
             });
         }
 
-        // Busca CEP na ViaCEP
         async function buscarCEP() {
             let cep = document.getElementById('cep').value.replace(/\D/g, '');
             const cepInfo = document.getElementById('cepInfo');
             
             if (cep.length !== 8) {
-                cepInfo.classList.remove('ativo');
+                cepInfo.innerHTML = '';
                 return;
             }
 
@@ -472,26 +414,39 @@
 
                 if (data.erro) {
                     cepInfo.innerHTML = '<span style="color: #c62828;">❌ CEP não encontrado</span>';
-                    cepInfo.classList.add('ativo');
                     enderecoCompletoDestino = '';
                 } else {
                     enderecoCompletoDestino = `${data.logradouro}, ${data.bairro}, ${data.localidade} - ${data.uf}, ${data.cep}`;
                     cepInfo.innerHTML = `
-                        <strong>✅ Endereço encontrado:</strong><br>
-                        ${data.logradouro}<br>
-                        ${data.bairro}<br>
-                        ${data.localidade} - ${data.uf}
+                        <span style="color: #2e7d32;">✅ Endereço encontrado:</span><br>
+                        <strong>${data.logradouro}</strong><br>
+                        ${data.bairro} - ${data.localidade}/${data.uf}
                     `;
-                    cepInfo.classList.add('ativo');
                 }
             } catch (error) {
                 cepInfo.innerHTML = '<span style="color: #c62828;">❌ Erro ao buscar CEP</span>';
-                cepInfo.classList.add('ativo');
                 enderecoCompletoDestino = '';
             }
         }
 
-        // Calcula a rota
+        // CORREÇÃO: Envolvendo DirectionsService em Promise
+        function calcularRotaComGoogleMaps(origin, destination) {
+            return new Promise((resolve, reject) => {
+                directionsService.route({
+                    origin: origin,
+                    destination: destination,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    unitSystem: google.maps.UnitSystem.METRIC
+                }, (result, status) => {
+                    if (status === google.maps.DirectionsStatus.OK) {
+                        resolve(result);
+                    } else {
+                        reject(new Error(`Erro no cálculo da rota: ${status}`));
+                    }
+                });
+            });
+        }
+
         async function calcularRota() {
             const cep = document.getElementById('cep').value.replace(/\D/g, '');
             const numero = document.getElementById('numero').value.trim();
@@ -519,59 +474,46 @@
             resultado.classList.remove('ativo');
 
             try {
-                // Monta endereço completo com número
                 const destinoCompleto = `${enderecoCompletoDestino}, ${numero}`;
 
-                const request = {
-                    origin: ORIGEM,
-                    destination: destinoCompleto,
-                    travelMode: google.maps.TravelMode.DRIVING,
-                    unitSystem: google.maps.UnitSystem.METRIC
-                };
-
-                const result = await directionsService.route(request);
+                // CORREÇÃO: Usando a função Promise-wrapped
+                const result = await calcularRotaComGoogleMaps(ORIGEM, destinoCompleto);
                 
-                if (result.status === 'OK') {
-                    directionsRenderer.setDirections(result);
-                    
-                    const route = result.routes[0].legs[0];
-                    let distanciaKm = route.distance.value / 1000;
-                    const tempoMinutos = Math.round(route.duration.value / 60);
+                directionsRenderer.setDirections(result);
+                
+                const route = result.routes[0].legs[0];
+                let distanciaKm = route.distance.value / 1000;
+                const tempoMinutos = Math.round(route.duration.value / 60);
 
-                    if (tipoViagem === 'ida-volta') {
-                        distanciaKm *= 2;
-                    }
-
-                    const valorTotal = distanciaKm * 2.00;
-
-                    // Extrai informações do endereço para exibição
-                    const enderecoParaExibicao = `${numero}, ${enderecoCompletoDestino}`;
-
-                    document.getElementById('enderecoDestino').textContent = enderecoParaExibicao;
-                    document.getElementById('distancia').textContent = distanciaKm.toFixed(2);
-                    document.getElementById('tempo').textContent = tempoMinutos;
-                    document.getElementById('tipoTexto').textContent = tipoViagem === 'ida' ? 'Apenas Ida' : 'Ida e Volta';
-                    document.getElementById('valorTotal').textContent = formatarMoeda(valorTotal);
-                    document.getElementById('pixValor').textContent = formatarMoeda(valorTotal);
-
-                    gerarQRCodePIX(valorTotal, enderecoParaExibicao);
-
-                    mensagemInicial.style.display = 'none';
-                    resultado.classList.add('ativo');
-
-                    const bounds = new google.maps.LatLngBounds();
-                    bounds.extend(new google.maps.LatLng(-23.8759, -46.5175));
-                    
-                    const geocoder = new google.maps.Geocoder();
-                    geocoder.geocode({ address: destinoCompleto }, (results, status) => {
-                        if (status === 'OK') {
-                            bounds.extend(results[0].geometry.location);
-                            map.fitBounds(bounds);
-                        }
-                    });
-                } else {
-                    throw new Error('Não foi possível calcular a rota. Verifique o endereço.');
+                if (tipoViagem === 'ida-volta') {
+                    distanciaKm *= 2;
                 }
+
+                const valorTotal = distanciaKm * 2.00;
+                const enderecoParaExibicao = `${numero}, ${enderecoCompletoDestino}`;
+
+                document.getElementById('enderecoDestino').textContent = enderecoParaExibicao;
+                document.getElementById('distancia').textContent = distanciaKm.toFixed(2);
+                document.getElementById('tempo').textContent = tempoMinutos;
+                document.getElementById('tipoTexto').textContent = tipoViagem === 'ida' ? 'Apenas Ida' : 'Ida e Volta';
+                document.getElementById('valorTotal').textContent = formatarMoeda(valorTotal);
+                document.getElementById('pixValor').textContent = formatarMoeda(valorTotal);
+
+                gerarQRCodePIX(valorTotal, enderecoParaExibicao);
+
+                mensagemInicial.style.display = 'none';
+                resultado.classList.add('ativo');
+
+                const bounds = new google.maps.LatLngBounds();
+                bounds.extend(new google.maps.LatLng(-23.8759, -46.5175));
+                
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: destinoCompleto }, (results, status) => {
+                    if (status === 'OK') {
+                        bounds.extend(results[0].geometry.location);
+                        map.fitBounds(bounds);
+                    }
+                });
 
             } catch (error) {
                 alert('Erro: ' + error.message);
@@ -642,15 +584,12 @@
                 colorLight: '#ffffff',
                 correctLevel: QRCode.CorrectLevel.M
             });
-
-            console.log('Payload PIX:', payloadPIX);
         }
 
         function formatarMoeda(valor) {
             return 'R$ ' + valor.toFixed(2).replace('.', ',');
         }
 
-        // Máscara para CEP
         document.getElementById('cep').addEventListener('input', function(e) {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 8) value = value.slice(0, 8);
