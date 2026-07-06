@@ -1,91 +1,589 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pibbaweb - Impressões de Documentos e Apostilas</title>
-<style>
-* {
-margin: 0;
-padding: 0;
-box-sizing: border-box;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Frete - Cubatão | Pagamento PIX</title>
+    
+    <!-- Google Maps API - SUBSTITUA SUA_CHAVE_API pela sua chave do Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_API&libraries=places"></script>
+    
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body {
-font-family: Arial, sans-serif;
-}
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
 
-header {
-background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-padding: 15px 30px;
-box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-position: relative;
-}
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
 
-.logo-container {
-position: absolute;
-top: 15px;
-left: 30px;
-z-index: 1000;
-}
+        header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            text-align: center;
+        }
 
-.logo-container img {
-height: 120px;
-width: auto;
-display: block;
-transition: transform 0.3s ease;
-}
+        header h1 {
+            color: #667eea;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
 
-.logo-container img:hover {
-transform: scale(1.05);
-}
+        header .tarifa {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            display: inline-block;
+            padding: 10px 30px;
+            border-radius: 25px;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
 
-/* Menu de navegação - exemplo */
-nav {
-margin-left: 200px; /* Espaço para o logo */
-display: flex;
-gap: 30px;
-align-items: center;
-}
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
 
-nav a {
-color: white;
-text-decoration: none;
-font-weight: 500;
-padding: 10px 20px;
-transition: background 0.3s;
-}
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
-nav a:hover {
-background: rgba(255,255,255,0.2);
-border-radius: 5px;
-}
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
 
-/* Conteúdo principal - exemplo */
-main {
-padding: 40px;
-margin-top: 150px; /* Espaço para o header fixo */
-}
-</style>
+        .card h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .origin-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .btn-calcular {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-calcular:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-calcular:active {
+            transform: translateY(0);
+        }
+
+        #map {
+            height: 400px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .resultado {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .resultado.ativo {
+            display: block;
+            animation: slideIn 0.5s;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .valor-total {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .valor-total .label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+
+        .valor-total .preco {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .detalhes {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .detalhes p {
+            margin: 8px 0;
+            color: #555;
+        }
+
+        .detalhes strong {
+            color: #333;
+        }
+
+        .pix-section {
+            background: linear-gradient(135deg, #32ba7c 0%, #11998e 100%);
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+        }
+
+        .pix-section h3 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        #qrcode {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            margin: 20px 0;
+        }
+
+        .pix-chave {
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 1.1rem;
+            word-break: break-all;
+        }
+
+        .pix-instructions {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.ativo {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border-left: 4px solid #c33;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border-left: 4px solid #3c3;
+        }
+    </style>
 </head>
 <body>
-<header>
-<div class="logo-container">
-<img src="pibbaweb-logo.png" alt="Pibbaweb - Impressões de Documentos e Apostilas - Sua Melhor Escolha">
-</div>
+    <div class="container">
+        <header>
+            <h1>🚛 Sistema de Cálculo de Frete</h1>
+            <div class="tarifa">💰 Tarifa: R$ 2,00 por KM rodado</div>
+        </header>
 
-<nav>
-<a href="#home">Home</a>
-<a href="#servicos">Serviços</a>
-<a href="#orcamento">Orçamento</a>
-<a href="#contato">Contato</a>
-</nav>
-</header>
+        <div class="main-grid">
+            <!-- Coluna Esquerda: Formulário e Mapa -->
+            <div>
+                <div class="card">
+                    <h2>📍 Dados da Entrega</h2>
+                    
+                    <div class="form-group">
+                        <label>📦 Origem (Base Fixa)</label>
+                        <div class="origin-box">
+                            <strong>Av. Brasil, 284 - Jardim Casqueiro</strong><br>
+                            Cubatão - SP<br>
+                            CEP: 11573-030
+                        </div>
+                    </div>
 
-<main>
-<!-- Seu conteúdo aqui -->
-<h1>Bem-vindo à Pibbaweb</h1>
-<p>Sua melhor escolha em impressões de documentos e apostilas</p>
-</main>
+                    <div class="form-group">
+                        <label>🎯 Destino Completo</label>
+                        <input type="text" id="destino" placeholder="Ex: Rua das Flores, 123 - São Paulo - SP" autocomplete="off">
+                    </div>
+
+                    <div class="form-group">
+                        <label>🚚 Tipo de Viagem</label>
+                        <select id="tipoViagem">
+                            <option value="ida">Apenas Ida</option>
+                            <option value="ida-volta">Ida e Volta</option>
+                        </select>
+                    </div>
+
+                    <button class="btn-calcular" onclick="calcularRota()">
+                        🧮 Calcular Rota e Gerar Pagamento
+                    </button>
+
+                    <div id="loading" class="loading">
+                        <div class="spinner"></div>
+                        <p>Calculando melhor rota...</p>
+                    </div>
+
+                    <div id="map"></div>
+                </div>
+            </div>
+
+            <!-- Coluna Direita: Resultados e PIX -->
+            <div>
+                <div class="card" id="resultadoCard">
+                    <h2>💳 Resumo e Pagamento</h2>
+                    
+                    <div id="mensagemInicial" style="text-align: center; padding: 40px; color: #999;">
+                        <p style="font-size: 3rem; margin-bottom: 15px;">📋</p>
+                        <p>Preencha o destino e calcule a rota para ver o valor e gerar o QR Code PIX</p>
+                    </div>
+
+                    <div id="resultado" class="resultado">
+                        <div class="valor-total">
+                            <div class="label">Valor Total do Frete</div>
+                            <div class="preco" id="valorTotal">R$ 0,00</div>
+                        </div>
+
+                        <div class="detalhes">
+                            <p><strong>📏 Distância:</strong> <span id="distancia">0</span> km</p>
+                            <p><strong>⏱️ Tempo Estimado:</strong> <span id="tempo">0</span> minutos</p>
+                            <p><strong>🔄 Tipo:</strong> <span id="tipoTexto">Apenas Ida</span></p>
+                            <p><strong>💵 Valor por KM:</strong> R$ 2,00</p>
+                        </div>
+
+                        <div class="pix-section">
+                            <h3>📱 Escaneie para Pagar com PIX</h3>
+                            <div id="qrcode"></div>
+                            <div style="margin-top: 15px;">
+                                <strong>Ou copie a chave PIX:</strong>
+                                <div class="pix-chave" id="pixChave">13988089754</div>
+                            </div>
+                            <div class="pix-instructions">
+                                <p>Abra o app do seu banco<br>Escaneie o QR Code ou cole a chave<br>Valor: <strong id="pixValor">R$ 0,00</strong></p>
+                            </div>
+                        </div>
+
+                        <button class="btn-calcular" onclick="window.print()" style="margin-top: 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            🖨️ Imprimir Comprovante
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+        let directionsService;
+        let directionsRenderer;
+        const ORIGEM = "Av. Brasil, 284, Jardim Casqueiro, Cubatão, SP, 11573-030";
+        const CHAVE_PIX = "13988089754";
+        const NOME_MERCHANT = "FRETE CUBATAO";
+        const CIDADE_MERCHANT = "CUBATAO";
+
+        // Inicializa o mapa
+        function initMap() {
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 13,
+                center: { lat: -23.8759, lng: -46.5175 }, // Coordenadas de Cubatão
+                disableDefaultUI: false,
+                zoomControl: true,
+                streetViewControl: false,
+                mapTypeControl: false,
+            });
+
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: false,
+                polylineOptions: {
+                    strokeColor: '#667eea',
+                    strokeWeight: 5,
+                    strokeOpacity: 0.8
+                }
+            });
+
+            // Adiciona marcador da origem
+            new google.maps.Marker({
+                position: { lat: -23.8759, lng: -46.5175 },
+                map: map,
+                title: "Origem - Av. Brasil, 284",
+                label: "📦"
+            });
+        }
+
+        // Calcula a rota
+        async function calcularRota() {
+            const destino = document.getElementById('destino').value.trim();
+            const tipoViagem = document.getElementById('tipoViagem').value;
+            const loading = document.getElementById('loading');
+            const resultado = document.getElementById('resultado');
+            const mensagemInicial = document.getElementById('mensagemInicial');
+
+            if (!destino) {
+                alert('Por favor, informe o endereço de destino completo.');
+                return;
+            }
+
+            loading.classList.add('ativo');
+            resultado.classList.remove('ativo');
+
+            try {
+                // Calcula rota usando Google Maps Directions API
+                const request = {
+                    origin: ORIGEM,
+                    destination: destino,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                    unitSystem: google.maps.UnitSystem.METRIC
+                };
+
+                const result = await directionsService.route(request);
+                
+                if (result.status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    
+                    const route = result.routes[0].legs[0];
+                    let distanciaKm = route.distance.value / 1000;
+                    const tempoMinutos = Math.round(route.duration.value / 60);
+
+                    // Se for ida e volta, dobra a distância
+                    if (tipoViagem === 'ida-volta') {
+                        distanciaKm *= 2;
+                    }
+
+                    // Calcula valor (R$ 2,00 por km)
+                    const valorTotal = distanciaKm * 2.00;
+
+                    // Atualiza interface
+                    document.getElementById('distancia').textContent = distanciaKm.toFixed(2);
+                    document.getElementById('tempo').textContent = tempoMinutos;
+                    document.getElementById('tipoTexto').textContent = tipoViagem === 'ida' ? 'Apenas Ida' : 'Ida e Volta';
+                    document.getElementById('valorTotal').textContent = formatarMoeda(valorTotal);
+                    document.getElementById('pixValor').textContent = formatarMoeda(valorTotal);
+
+                    // Gera QR Code PIX
+                    gerarQRCodePIX(valorTotal, destino);
+
+                    mensagemInicial.style.display = 'none';
+                    resultado.classList.add('ativo');
+
+                    // Ajusta zoom do mapa
+                    const bounds = new google.maps.LatLngBounds();
+                    bounds.extend(new google.maps.LatLng(-23.8759, -46.5175));
+                    
+                    // Tenta geocodificar destino para ajustar bounds
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ address: destino }, (results, status) => {
+                        if (status === 'OK') {
+                            bounds.extend(results[0].geometry.location);
+                            map.fitBounds(bounds);
+                        }
+                    });
+                } else {
+                    throw new Error('Não foi possível calcular a rota. Verifique o endereço de destino.');
+                }
+
+            } catch (error) {
+                alert('Erro: ' + error.message);
+            } finally {
+                loading.classList.remove('ativo');
+            }
+        }
+
+        // Gera payload PIX no padrão EMV
+        function gerarPayloadPIX(valor, descricao) {
+            const txid = 'FRETE' + Date.now();
+            const valorFormatado = valor.toFixed(2).replace('.', ',');
+
+            // Função para calcular CRC16-CCITT
+            function crc16(payload) {
+                let crc = 0xFFFF;
+                const polynomial = 0x1021;
+
+                for (let i = 0; i < payload.length; i++) {
+                    crc ^= payload.charCodeAt(i) << 8;
+                    for (let j = 0; j < 8; j++) {
+                        crc = (crc & 0x8000) ? (crc << 1) ^ polynomial : crc << 1;
+                    }
+                }
+
+                crc = crc & 0xFFFF;
+                return crc.toString(16).toUpperCase().padStart(4, '0');
+            }
+
+            // Monta payload EMV
+            let payload = '';
+            
+            // 00 - Payload Format Indicator
+            payload += '000201';
+            
+            // 26 - Merchant Account Information
+            const gui = 'br.gov.bcb.pix';
+            const chave = CHAVE_PIX;
+            const merchantInfo = `0014${gui}01${chave.length.toString().padStart(2, '0')}${chave}`;
+            payload += `26${merchantInfo.length.toString().padStart(2, '0')}${merchantInfo}`;
+            
+            // 52 - Merchant Category Code
+            payload += '52040000';
+            
+            // 53 - Transaction Currency (BRL)
+            payload += '5303986';
+            
+            // 54 - Transaction Amount
+            payload += `54${valorFormatado.length.toString().padStart(2, '0')}${valorFormatado}`;
+            
+            // 58 - Country Code
+            payload += '5802BR';
+            
+            // 59 - Merchant Name
+            const nome = NOME_MERCHANT.substring(0, 25);
+            payload += `59${nome.length.toString().padStart(2, '0')}${nome}`;
+            
+            // 60 - Merchant City
+            const cidade = CIDADE_MERCHANT.substring(0, 15);
+            payload += `60${cidade.length.toString().padStart(2, '0')}${cidade}`;
+            
+            // 62 - Additional Data Field
+            const txidField = `05${txid.length.toString().padStart(2, '0')}${txid}`;
+            payload += `62${txidField.length.toString().padStart(2, '0')}${txidField}`;
+            
+            // 63 - CRC16
+            payload += '6304';
+            const crc = crc16(payload);
+            payload += crc;
+
+            return payload;
+        }
+
+        // Gera QR Code PIX
+        function gerarQRCodePIX(valor, destino) {
+            // Limpa QR Code anterior
+            document.getElementById('qrcode').innerHTML = '';
+            
+            // Gera payload PIX
+            const payloadPIX = gerarPayloadPIX(valor, destino);
+            
+            // Gera QR Code visual
+            new QRCode(document.getElementById('qrcode'), {
+                text: payloadPIX,
+                width: 256,
+                height: 256,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.M
+            });
+
+            console.log('Payload PIX:', payloadPIX);
+        }
+
+        // Formata valor em moeda
+        function formatarMoeda(valor) {
+            return 'R$ ' + valor.toFixed(2).replace('.', ',');
+        }
+
+        // Inicializa quando página carregar
+        window.onload = initMap;
+    </script>
 </body>
 </html>
