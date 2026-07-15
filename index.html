@@ -298,6 +298,13 @@ document.getElementById("pagamento").style.display = "block";
 }
 
 </script>
+function calcularFrete(distanciaKm) {
+    return (distanciaKm * 2.10).toFixed(2);
+}
 
+const distancia = 18.5;
+const frete = calcularFrete(distancia);
+
+console.log(`Frete: R$ ${frete}`);
 </body>
 </html>
