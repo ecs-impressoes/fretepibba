@@ -387,6 +387,16 @@
             }
         }
 
+        .error-box {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--danger);
+            margin: 12px 0;
+            display: none;
+        }
+
         @media (max-width: 600px) {
             .freight-rate-info {
                 grid-template-columns: 1fr;
@@ -419,8 +429,8 @@
             <h2>📍 Ponto de Partida</h2>
             <div class="info-box">
                 <strong>Endereço Fixo:</strong>
-                <a href="https://www.google.com/maps/search/?api=1&query=PIBBAWEB" target="_blank">
-                    PIBBAWEB - Clique para ver no mapa
+                <a href="https://www.google.com/maps/search/?api=1&query=Av+Brasil+284+Cubatão+SP" target="_blank">
+                    Av. Brasil, 284 - Cubatão - SP, 11533-000
                 </a>
                 <br>
                 <span style="font-size:0.85rem; color:var(--text-muted);">
@@ -443,7 +453,7 @@
                 <label for="tipo_veiculo">Tipo de Veículo</label>
                 <select id="tipo_veiculo">
                     <option value="moto">Moto (taxa base R$ 2,00/km)</option>
-                    <option value="carro">Carro (taxa base R$ 3,50/km)</option>
+                    <option value="carro" selected>Carro (taxa base R$ 3,50/km)</option>
                     <option value="van">Van (taxa base R$ 5,00/km)</option>
                 </select>
             </div>
@@ -451,6 +461,8 @@
             <button class="btn" id="calcularBtn" onclick="calcularFrete()">
                 🧭 Calcular Frete
             </button>
+
+            <div id="error-box" class="error-box"></div>
 
             <div id="map-container" class="map-container" style="margin-top:16px;">
                 <div class="map-placeholder" id="mapPlaceholder">
@@ -541,14 +553,10 @@
             van: 5.00
         };
 
-        // Coordenadas de partida (PIBBAWEB - exemplo)
-        const ORIGEM = {
-            lat: -23.5505,
-            lng: -46.6333
-        };
-
-        // Nome da origem
-        const ORIGEM_NOME = 'PIBBAWEB';
+        // Coordenadas de partida (Av. Brasil, 284 - Cubatão - SP)
+        const ORIGEM_LAT = -23.8950;
+        const ORIGEM_LNG = -46.4240;
+        const ORIGEM_NOME = 'Av Brasil 284 Cubatão SP';
 
         // Função para calcular frete usando a API do Google Maps
         function calcularFrete() {
@@ -556,119 +564,91 @@
             const tipoVeiculo = document.getElementById('tipo_veiculo').value;
             const btn = document.getElementById('calcularBtn');
             const resultDiv = document.getElementById('resultado-frete');
+            const errorBox = document.getElementById('error-box');
 
             if (!destino) {
-                alert('Por favor, digite um endereço de destino.');
+                mostrarErro('Por favor, digite um endereço de destino.');
                 return;
             }
+
+            // Esconder erro anterior
+            errorBox.style.display = 'none';
+            resultDiv.style.display = 'none';
 
             // Mostrar loading
             btn.innerHTML = '<span class="loading"></span> Calculando...';
             btn.disabled = true;
 
-            // Esconder resultado anterior
-            resultDiv.style.display = 'none';
+            // Construir URL para API de Distâncias do Google Maps
+            const origin = encodeURIComponent(ORIGEM_NOME);
+            const dest = encodeURIComponent(destino);
 
-            // Construir URL do Google Maps para distância
-            const originEncoded = encodeURIComponent(ORIGEM_NOME);
-            const destEncoded = encodeURIComponent(destino);
+            // URL para o mapa com a rota
+            const mapUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyB4Rw5_6kZ6h5Jx7q8w9e0r1t2y3u4i5o6p7a8s9d0&origin=${origin}&destination=${dest}&maptype=roadmap&language=pt-BR`;
 
-            // Usar a API Distance Matrix do Google Maps (via iframe para visualização)
             const mapIframe = document.getElementById('mapIframe');
             const mapPlaceholder = document.getElementById('mapPlaceholder');
-
-            // Mostrar mapa com a rota
-            const mapUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyB4Rw5_6kZ6h5Jx7q8w9e0r1t2y3u4i5o6p7a8s9d0&origin=${originEncoded}&destination=${destEncoded}&maptype=roadmap&language=pt-BR`;
 
             mapIframe.src = mapUrl;
             mapIframe.style.display = 'block';
             mapPlaceholder.style.display = 'none';
 
-            // Simular cálculo de distância e frete (API real precisa de chave)
-            // Usamos um cálculo estimado baseado na distância aproximada
-            setTimeout(() => {
-                // Distância simulada baseada no endereço (para demonstração)
-                const distanciaEstimada = estimarDistancia(destino);
+            // Usar a API Distance Matrix para obter a distância real
+            const distanceApiUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(ORIGEM_NOME)}&destinations=${encodeURIComponent(destino)}&key=AIzaSyB4Rw5_6kZ6h5Jx7q8w9e0r1t2y3u4i5o6p7a8s9d0&language=pt-BR&units=metric`;
 
-                const taxa = TAXAS[tipoVeiculo] || 2.00;
-                const valorFrete = distanciaEstimada * taxa;
+            fetch(distanceApiUrl)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Resposta da API:', data);
 
-                // Atualizar resultados
-                document.getElementById('distanciaKm').textContent = distanciaEstimada.toFixed(1) + ' km';
-                document.getElementById('taxaKm').textContent = `R$ ${taxa.toFixed(2)}/km`;
-                document.getElementById('valorFrete').textContent = `R$ ${valorFrete.toFixed(2)}`;
-                document.getElementById('detalheFrete').textContent =
-                    `Distância: ${distanciaEstimada.toFixed(1)} km | Taxa: R$ ${taxa.toFixed(2)}/km`;
+                    if (data.status === 'OK' && data.rows[0].elements[0].status === 'OK') {
+                        const element = data.rows[0].elements[0];
+                        const distanciaMetros = element.distance.value;
+                        const distanciaKm = distanciaMetros / 1000;
+                        const duracao = element.duration.text;
 
-                resultDiv.style.display = 'block';
+                        const taxa = TAXAS[tipoVeiculo] || 3.50;
+                        const valorFrete = distanciaKm * taxa;
 
-                // Restaurar botão
-                btn.innerHTML = '🧭 Calcular Frete';
-                btn.disabled = false;
+                        // Atualizar resultados
+                        document.getElementById('distanciaKm').textContent = distanciaKm.toFixed(1) + ' km';
+                        document.getElementById('taxaKm').textContent = `R$ ${taxa.toFixed(2)}/km`;
+                        document.getElementById('valorFrete').textContent = `R$ ${valorFrete.toFixed(2)}`;
+                        document.getElementById('detalheFrete').textContent =
+                            `Distância: ${distanciaKm.toFixed(1)} km | Taxa: R$ ${taxa.toFixed(2)}/km | Tempo estimado: ${duracao}`;
 
-                // Rolar até o resultado
-                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        resultDiv.style.display = 'block';
 
-            }, 800);
+                        // Restaurar botão
+                        btn.innerHTML = '🧭 Calcular Frete';
+                        btn.disabled = false;
+
+                        // Rolar até o resultado
+                        setTimeout(() => {
+                            resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }, 300);
+
+                    } else {
+                        const msg = data.rows[0].elements[0].status === 'ZERO_RESULTS' ?
+                            'Não foi possível encontrar uma rota entre os endereços informados.' :
+                            'Erro ao calcular a distância. Verifique os endereços e tente novamente.';
+                        mostrarErro(msg);
+                        btn.innerHTML = '🧭 Calcular Frete';
+                        btn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    mostrarErro('Erro ao conectar com o Google Maps. Tente novamente mais tarde.');
+                    btn.innerHTML = '🧭 Calcular Frete';
+                    btn.disabled = false;
+                });
         }
 
-        // Função para estimar distância baseada no endereço (simulação)
-        function estimarDistancia(destino) {
-            // Extrair possível CEP ou cidade para estimativa
-            const lower = destino.toLowerCase();
-
-            // Distâncias aproximadas de São Paulo (capital) para várias regiões
-            const distancias = {
-                'são paulo': 5,
-                'sp': 5,
-                'guarulhos': 20,
-                'são bernardo': 25,
-                'santo andré': 28,
-                'osasco': 18,
-                'carapicuíba': 22,
-                'diadema': 30,
-                'mauá': 32,
-                'são caetano': 18,
-                'taboão': 25,
-                'barueri': 30,
-                'campinas': 95,
-                'santos': 70,
-                'são josé': 90,
-                'ribeirão': 310,
-                'sorocaba': 100,
-                'jundiaí': 60,
-                'americana': 130,
-                'piracicaba': 160,
-                'bauru': 330,
-                'maringá': 550,
-                'curitiba': 400,
-                'rio de janeiro': 430,
-                'belo horizonte': 590,
-                'brasília': 1010,
-                'salvador': 1550,
-                'fortaleza': 2400,
-                'recife': 2600,
-                'porto alegre': 1100,
-                'florianópolis': 700,
-                'vitória': 850
-            };
-
-            let distancia = 8; // valor padrão
-
-            for (const [cidade, dist] of Object.entries(distancias)) {
-                if (lower.includes(cidade)) {
-                    distancia = dist + (Math.random() * 5 - 2.5);
-                    break;
-                }
-            }
-
-            // Se o endereço for muito longo, pode indicar mais distante
-            if (destino.length > 80) {
-                distancia += 5;
-            }
-
-            // Garantir mínimo de 1km
-            return Math.max(1, Math.round(distancia * 10) / 10);
+        function mostrarErro(mensagem) {
+            const errorBox = document.getElementById('error-box');
+            errorBox.textContent = '❌ ' + mensagem;
+            errorBox.style.display = 'block';
         }
 
         // Alternar seção de pagamento
@@ -716,8 +696,9 @@
             }
         });
 
-        // Inicializar com um cálculo automático para demonstração
+        // Carregar exemplo automático
         window.onload = function() {
+            // Carregar com o exemplo padrão
             setTimeout(() => {
                 calcularFrete();
             }, 500);
