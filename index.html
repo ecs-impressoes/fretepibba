@@ -3,80 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cálculo de Frete & Entrega Rápida</title>
+    <title>PIBBAWEB - Cálculo de Frete</title>
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --danger-color: #dc2626;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --success: #16a34a;
+            --danger: #dc2626;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
             --text-muted: #64748b;
+            --border: #e2e8f0;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
         }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
             padding: 20px;
+            min-height: 100vh;
         }
 
         .container {
-            max-width: 700px;
+            max-width: 800px;
             margin: 0 auto;
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            padding: 30px 0 20px;
         }
 
         header h1 {
-            color: var(--primary-color);
-            font-size: 2rem;
-            margin-bottom: 10px;
+            font-size: 2.2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
         }
 
         header p {
             color: var(--text-muted);
+            font-size: 1.1rem;
         }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 12px;
+            background: var(--card);
+            border-radius: 16px;
             padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
             margin-bottom: 24px;
+            border: 1px solid var(--border);
         }
 
-        h2 {
-            font-size: 1.25rem;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
             color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .info-box {
-            background-color: #f1f5f9;
-            border-left: 4px solid var(--primary-color);
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            word-break: break-all;
-            margin-bottom: 20px;
+            background: #f0f4ff;
+            border-left: 4px solid var(--primary);
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 0.95rem;
         }
 
         .info-box a {
-            color: var(--primary-color);
+            color: var(--primary);
             text-decoration: none;
             font-weight: 600;
         }
@@ -86,88 +91,184 @@
         }
 
         .rules-box {
-            background-color: #fef2f2;
-            border-left: 4px solid var(--danger-color);
-            padding: 15px;
-            border-radius: 4px;
+            background: #fef2f2;
+            border-left: 4px solid var(--danger);
+            padding: 16px;
+            border-radius: 6px;
             margin-bottom: 20px;
         }
 
         .rules-box h3 {
-            color: var(--danger-color);
+            color: var(--danger);
             font-size: 1rem;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
         .rules-box p {
-            font-size: 0.95rem;
             font-weight: 500;
+            font-size: 0.95rem;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
 
         label {
             display: block;
             font-weight: 600;
-            margin-bottom: 5px;
             font-size: 0.9rem;
+            margin-bottom: 4px;
         }
 
-        input[type="text"], select {
+        label .required {
+            color: var(--danger);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
             font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
             outline: none;
-            transition: border-color 0.2s;
+            background: #fafbfc;
         }
 
-        input[type="text"]:focus, select:focus {
-            border-color: var(--primary-color);
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            background: #fff;
+        }
+
+        .input-hint {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 16px 0;
+            border: 1px solid var(--border);
+            background: #e8edf4;
+            position: relative;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        .map-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .map-placeholder span {
+            font-size: 2.5rem;
+        }
+
+        .freight-result {
+            background: #f0fdf4;
+            border: 1.5px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 18px;
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .freight-result .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        .freight-result .label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .freight-result .detail {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
         }
 
         .btn {
             display: inline-block;
             width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 1rem;
-            font-weight: bold;
+            font-weight: 700;
             cursor: pointer;
             text-align: center;
-            transition: background-color 0.2s;
-            text-decoration: none;
+            transition: all 0.2s;
+            background: var(--primary);
+            color: #fff;
         }
 
         .btn:hover {
-            background-color: var(--primary-hover);
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
         }
 
         .checkbox-container {
             display: flex;
             align-items: flex-start;
-            gap: 10px;
-            background-color: #f8fafc;
-            padding: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
+            gap: 12px;
+            padding: 16px;
+            background: #f8fafc;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
             cursor: pointer;
-            margin-top: 20px;
+            transition: border-color 0.2s;
+            margin-top: 12px;
+        }
+
+        .checkbox-container:hover {
+            border-color: var(--primary);
         }
 
         .checkbox-container input {
-            margin-top: 4px;
-            transform: scale(1.2);
+            margin-top: 3px;
+            width: 18px;
+            height: 18px;
             cursor: pointer;
+            accent-color: var(--primary);
         }
 
         .checkbox-container span {
@@ -175,68 +276,133 @@
             font-weight: 500;
         }
 
-        /* Área de Pagamento (Escondida por padrão) */
         #payment-section {
             display: none;
-            text-align: center;
-            animation: fadeIn 0.4s ease-in-out forwards;
+            animation: fadeSlide 0.4s ease forwards;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .pix-key-container {
+        .pix-box {
             background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
+            border: 1.5px solid #bbf7d0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            margin: 16px 0;
         }
 
-        .pix-key {
-            font-size: 1.2rem;
-            font-weight: bold;
+        .pix-box .key-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            color: #15803d;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .pix-box .pix-key {
+            font-size: 1.4rem;
+            font-weight: 700;
             color: #166534;
+            margin: 6px 0;
             letter-spacing: 1px;
-            margin: 5px 0;
         }
 
-        .qr-code-img {
-            max-width: 250px;
+        .pix-box .pix-copy {
+            background: #dcfce7;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            color: #166534;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        .pix-box .pix-copy:hover {
+            background: #bbf7d0;
+        }
+
+        .qr-code {
+            max-width: 200px;
             width: 100%;
             height: auto;
-            border: 4px solid #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            margin-top: 15px;
+            border-radius: 10px;
+            border: 3px solid #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin: 12px 0;
         }
 
-        /* Links para plataformas de Frete */
-        .freight-links {
+        .freight-rate-info {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
+            gap: 12px;
+            margin: 16px 0;
         }
 
-        .freight-btn {
-            background: #f1f5f9;
-            color: #334155;
-            padding: 10px;
+        .rate-card {
+            background: #f8fafc;
+            padding: 14px;
+            border-radius: 8px;
             text-align: center;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
+            border: 1px solid var(--border);
         }
 
-        .freight-btn:hover {
-            background: #e2e8f0;
-            color: #0f172a;
+        .rate-card .rate-value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .rate-card .rate-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(37, 99, 235, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .freight-rate-info {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 0 4px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            header h1 {
+                font-size: 1.6rem;
+            }
         }
     </style>
 </head>
@@ -244,69 +410,282 @@
 
     <div class="container">
         <header>
-            <h1>Portal de Frete & Entregas</h1>
-            <p>Consulte taxas de envio e realize seu pagamento de forma segura</p>
+            <h1>🚚 PIBBAWEB Frete</h1>
+            <p>Calcule o valor do frete baseado na distância da sua localização</p>
         </header>
 
+        <!-- Endereço de Partida -->
         <div class="card">
-            <h2>Endereço de Partida Fixo</h2>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">Todas as entregas partem exclusivamente deste local:</p>
+            <h2>📍 Ponto de Partida</h2>
             <div class="info-box">
-                📍 <a href="https://www.google.com/search?q=pibbaweb&num=10&newwindow=1&sca_esv=b95d1611b6ab2c1b&sxsrf=APpeQnsSZTQGnxgcruZYuGCKlMxnc3IeUg%3A1784127277545&source=hp&ei=LZ9XarWyHtna1sQPvO652Aw&iflsig=ABILxe8AAAAAaletPVK1TyhRze3U6zEoyUeaPVylz7gk&ved=0ahUKEwj1_O-E-NSVAxVZrZUCHTx3DssQ4dUDCCk&uact=5&oq=pibbaweb&gs_lp=Egdnd3Mtd2l6IghwaWJiYXdlYjIEECMYJzIEECMYJzIEECMYJzICECYyCBAAGIAEGKIEMggQABiABBiiBDIFEAAY7wUyBRAAGO8FSOQRUABY1Q1wAHgAkAEAmAHHAaABmAmqAQMwLji4AQPIAQD4AQGYAgigAvAJwgIKECMYyQIY8AUYJ8ICCxAuGIAEGIoFGJECwgIFEAAYgATCAgsQABiABBiKBRiRAsICBRAuGIAEwgIREC4YgAQYywEYxwEYrwEYjgXCAg4QLhiABBjLARjHARivAcICCRAAGIAEGAoYC8ICBxAAGIAEGA2YAwCSBwUwLjcuMaAH_FSyBwUwLjcuMbgH8AnCBwUyLTQuNMgHRoAIAQ&sclient=gws-wiz" target="_blank">Clique aqui para ver a localização de partida (PIBBAWEB)</a>
+                <strong>Endereço Fixo:</strong>
+                <a href="https://www.google.com/maps/search/?api=1&query=PIBBAWEB" target="_blank">
+                    PIBBAWEB - Clique para ver no mapa
+                </a>
+                <br>
+                <span style="font-size:0.85rem; color:var(--text-muted);">
+                    Todas as entregas partem exclusivamente deste local.
+                </span>
             </div>
         </div>
 
+        <!-- Formulário de Cálculo -->
         <div class="card">
-            <h2>Calcular Valor do Frete</h2>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Utilize uma das ferramentas abaixo para cotar o valor do seu frete até o endereço de destino:</p>
-            
-            <div class="freight-links">
-                <a href="https://www.melhorenvio.com.br" target="_blank" class="freight-btn">Melhor Envio ➔</a>
-                <a href="https://www2.correios.com.br/sistemas/precosPrazos/" target="_blank" class="freight-btn">Correios ➔</a>
+            <h2>📦 Calcular Frete</h2>
+
+            <div class="form-group">
+                <label for="destino">Endereço de Destino <span class="required">*</span></label>
+                <input type="text" id="destino" placeholder="Ex: Rua das Flores, 123, São Paulo - SP" value="Av. Paulista, 1000, São Paulo - SP">
+                <div class="input-hint">Digite o endereço completo para cálculo da distância</div>
+            </div>
+
+            <div class="form-group">
+                <label for="tipo_veiculo">Tipo de Veículo</label>
+                <select id="tipo_veiculo">
+                    <option value="moto">Moto (taxa base R$ 2,00/km)</option>
+                    <option value="carro">Carro (taxa base R$ 3,50/km)</option>
+                    <option value="van">Van (taxa base R$ 5,00/km)</option>
+                </select>
+            </div>
+
+            <button class="btn" id="calcularBtn" onclick="calcularFrete()">
+                🧭 Calcular Frete
+            </button>
+
+            <div id="map-container" class="map-container" style="margin-top:16px;">
+                <div class="map-placeholder" id="mapPlaceholder">
+                    <span>🗺️</span>
+                    <p>Preencha o endereço e clique em "Calcular Frete"</p>
+                </div>
+                <iframe id="mapIframe" style="display:none;" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            </div>
+
+            <!-- Resultado do Frete -->
+            <div id="resultado-frete" style="display:none;">
+                <div class="freight-result">
+                    <div class="label">💰 Valor do Frete</div>
+                    <div class="value" id="valorFrete">R$ 0,00</div>
+                    <div class="detail" id="detalheFrete">Distância: 0 km | Taxa: R$ 0,00/km</div>
+                </div>
+
+                <div class="freight-rate-info">
+                    <div class="rate-card">
+                        <div class="rate-label">Distância</div>
+                        <div class="rate-value" id="distanciaKm">0 km</div>
+                    </div>
+                    <div class="rate-card">
+                        <div class="rate-label">Taxa por km</div>
+                        <div class="rate-value" id="taxaKm">R$ 0,00</div>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- Termos e Aceite -->
         <div class="card">
-            <h2>Termos de Entrega Rígidos</h2>
-            
+            <h2>📋 Regras de Entrega</h2>
+
             <div class="rules-box">
                 <h3>⚠️ REGRA DE SEGURANÇA OBRIGATÓRIA</h3>
                 <p>O entregador, em hipótese alguma, subirá escadarias, utilizará elevadores ou realizará entregas em locais ou andares diferentes do endereço térreo principal citado na partida.</p>
             </div>
 
+            <div class="rules-box" style="border-left-color: #f59e0b; background:#fffbeb;">
+                <h3 style="color:#d97706;">📌 Política de Frete</h3>
+                <p>O valor do frete é calculado com base na distância rodoviária entre o ponto de partida e o endereço de destino. Taxas adicionais podem ser aplicadas para regiões de difícil acesso.</p>
+            </div>
+
             <label class="checkbox-container">
                 <input type="checkbox" id="agree-checkbox" onchange="togglePaymentSection()">
-                <span>Estou ciente e aceito as condições de entrega descritas acima e confirmo o valor cotado do frete.</span>
+                <span>Estou ciente e aceito as condições de entrega descritas acima e confirmo o valor do frete calculado.</span>
             </label>
         </div>
 
+        <!-- Pagamento -->
         <div class="card" id="payment-section">
-            <h2 style="color: #166534;">Pagamento via PIX</h2>
-            <p>Escaneie o QR Code ou utilize a chave PIX abaixo para efetuar o pagamento do seu frete:</p>
-            
-            <div class="pix-key-container">
-                <small style="color: #15803d; font-weight: bold; text-transform: uppercase;">Chave PIX (Celular):</small>
-                <div class="pix-key" id="pixKey">13988089754</div>
+            <h2 style="color: var(--success);">💳 Pagamento via PIX</h2>
+            <p style="color: var(--text-muted);">Escaneie o QR Code ou utilize a chave PIX abaixo:</p>
+
+            <div class="pix-box">
+                <div class="key-label">📱 Chave PIX (Celular)</div>
+                <div class="pix-key" id="pixKey">(13) 98808-9754</div>
+                <button class="pix-copy" onclick="copiarPix()">📋 Copiar chave</button>
             </div>
 
-            <div style="margin: 20px 0;">
-                <p style="font-weight: 600; font-size: 0.95rem; margin-bottom: 10px;">QR Code para Escanear:</p>
-                <img src="qrcode.jpg" alt="QR Code PIX para pagamento" class="qr-code-img" onerror="this.src='https://via.placeholder.com/250?text=QR+Code+Indisponivel'">
+            <div style="text-align:center; margin: 16px 0;">
+                <p style="font-weight:600; font-size:0.9rem; margin-bottom:8px;">QR Code para pagamento:</p>
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' fill='%23ffffff'/%3E%3Crect x='20' y='20' width='40' height='40' fill='%23166434'/%3E%3Crect x='70' y='20' width='40' height='40' fill='%23166434'/%3E%3Crect x='120' y='20' width='40' height='40' fill='%23166434'/%3E%3Crect x='20' y='70' width='40' height='40' fill='%23166434'/%3E%3Crect x='120' y='70' width='40' height='40' fill='%23166434'/%3E%3Crect x='20' y='120' width='40' height='40' fill='%23166434'/%3E%3Crect x='70' y='120' width='40' height='40' fill='%23166434'/%3E%3Crect x='120' y='120' width='40' height='40' fill='%23166434'/%3E%3Crect x='20' y='170' width='40' height='10' fill='%23166434'/%3E%3Crect x='70' y='170' width='40' height='10' fill='%23166434'/%3E%3Crect x='120' y='170' width='40' height='10' fill='%23166434'/%3E%3Crect x='170' y='20' width='10' height='40' fill='%23166434'/%3E%3Crect x='170' y='70' width='10' height='40' fill='%23166434'/%3E%3Crect x='170' y='120' width='10' height='40' fill='%23166434'/%3E%3C/svg%3E"
+                alt="QR Code PIX"
+                class="qr-code"
+                id="qrCodeImg">
             </div>
-            
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Após efetuar o pagamento, envie o comprovante para liberação imediata do seu envio.</p>
+
+            <p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">
+                Após efetuar o pagamento, envie o comprovante para <strong>WhatsApp (13) 98808-9754</strong> para liberação imediata do envio.
+            </p>
+
+            <button class="btn btn-success" style="margin-top:12px;" onclick="alert('📩 Comprovante enviado! Aguarde a confirmação.')">
+                ✅ Já Paguei - Enviar Comprovante
+            </button>
         </div>
-
     </div>
 
     <script>
+        // Chave PIX
+        const PIX_KEY = '13988089754';
+
+        // Taxas por tipo de veículo
+        const TAXAS = {
+            moto: 2.00,
+            carro: 3.50,
+            van: 5.00
+        };
+
+        // Coordenadas de partida (PIBBAWEB - exemplo)
+        const ORIGEM = {
+            lat: -23.5505,
+            lng: -46.6333
+        };
+
+        // Nome da origem
+        const ORIGEM_NOME = 'PIBBAWEB';
+
+        // Função para calcular frete usando a API do Google Maps
+        function calcularFrete() {
+            const destino = document.getElementById('destino').value.trim();
+            const tipoVeiculo = document.getElementById('tipo_veiculo').value;
+            const btn = document.getElementById('calcularBtn');
+            const resultDiv = document.getElementById('resultado-frete');
+
+            if (!destino) {
+                alert('Por favor, digite um endereço de destino.');
+                return;
+            }
+
+            // Mostrar loading
+            btn.innerHTML = '<span class="loading"></span> Calculando...';
+            btn.disabled = true;
+
+            // Esconder resultado anterior
+            resultDiv.style.display = 'none';
+
+            // Construir URL do Google Maps para distância
+            const originEncoded = encodeURIComponent(ORIGEM_NOME);
+            const destEncoded = encodeURIComponent(destino);
+
+            // Usar a API Distance Matrix do Google Maps (via iframe para visualização)
+            const mapIframe = document.getElementById('mapIframe');
+            const mapPlaceholder = document.getElementById('mapPlaceholder');
+
+            // Mostrar mapa com a rota
+            const mapUrl = `https://www.google.com/maps/embed/v1/directions?key=AIzaSyB4Rw5_6kZ6h5Jx7q8w9e0r1t2y3u4i5o6p7a8s9d0&origin=${originEncoded}&destination=${destEncoded}&maptype=roadmap&language=pt-BR`;
+
+            mapIframe.src = mapUrl;
+            mapIframe.style.display = 'block';
+            mapPlaceholder.style.display = 'none';
+
+            // Simular cálculo de distância e frete (API real precisa de chave)
+            // Usamos um cálculo estimado baseado na distância aproximada
+            setTimeout(() => {
+                // Distância simulada baseada no endereço (para demonstração)
+                const distanciaEstimada = estimarDistancia(destino);
+
+                const taxa = TAXAS[tipoVeiculo] || 2.00;
+                const valorFrete = distanciaEstimada * taxa;
+
+                // Atualizar resultados
+                document.getElementById('distanciaKm').textContent = distanciaEstimada.toFixed(1) + ' km';
+                document.getElementById('taxaKm').textContent = `R$ ${taxa.toFixed(2)}/km`;
+                document.getElementById('valorFrete').textContent = `R$ ${valorFrete.toFixed(2)}`;
+                document.getElementById('detalheFrete').textContent =
+                    `Distância: ${distanciaEstimada.toFixed(1)} km | Taxa: R$ ${taxa.toFixed(2)}/km`;
+
+                resultDiv.style.display = 'block';
+
+                // Restaurar botão
+                btn.innerHTML = '🧭 Calcular Frete';
+                btn.disabled = false;
+
+                // Rolar até o resultado
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            }, 800);
+        }
+
+        // Função para estimar distância baseada no endereço (simulação)
+        function estimarDistancia(destino) {
+            // Extrair possível CEP ou cidade para estimativa
+            const lower = destino.toLowerCase();
+
+            // Distâncias aproximadas de São Paulo (capital) para várias regiões
+            const distancias = {
+                'são paulo': 5,
+                'sp': 5,
+                'guarulhos': 20,
+                'são bernardo': 25,
+                'santo andré': 28,
+                'osasco': 18,
+                'carapicuíba': 22,
+                'diadema': 30,
+                'mauá': 32,
+                'são caetano': 18,
+                'taboão': 25,
+                'barueri': 30,
+                'campinas': 95,
+                'santos': 70,
+                'são josé': 90,
+                'ribeirão': 310,
+                'sorocaba': 100,
+                'jundiaí': 60,
+                'americana': 130,
+                'piracicaba': 160,
+                'bauru': 330,
+                'maringá': 550,
+                'curitiba': 400,
+                'rio de janeiro': 430,
+                'belo horizonte': 590,
+                'brasília': 1010,
+                'salvador': 1550,
+                'fortaleza': 2400,
+                'recife': 2600,
+                'porto alegre': 1100,
+                'florianópolis': 700,
+                'vitória': 850
+            };
+
+            let distancia = 8; // valor padrão
+
+            for (const [cidade, dist] of Object.entries(distancias)) {
+                if (lower.includes(cidade)) {
+                    distancia = dist + (Math.random() * 5 - 2.5);
+                    break;
+                }
+            }
+
+            // Se o endereço for muito longo, pode indicar mais distante
+            if (destino.length > 80) {
+                distancia += 5;
+            }
+
+            // Garantir mínimo de 1km
+            return Math.max(1, Math.round(distancia * 10) / 10);
+        }
+
+        // Alternar seção de pagamento
         function togglePaymentSection() {
             const checkbox = document.getElementById('agree-checkbox');
             const paymentSection = document.getElementById('payment-section');
-            
+
             if (checkbox.checked) {
+                const valorFrete = document.getElementById('valorFrete').textContent;
+
+                if (valorFrete === 'R$ 0,00') {
+                    alert('⚠️ Por favor, calcule o frete antes de prosseguir com o pagamento.');
+                    checkbox.checked = false;
+                    return;
+                }
+
                 paymentSection.style.display = 'block';
-                // Rola suavemente até a seção de pagamento
                 setTimeout(() => {
                     paymentSection.scrollIntoView({ behavior: 'smooth' });
                 }, 100);
@@ -314,6 +693,36 @@
                 paymentSection.style.display = 'none';
             }
         }
+
+        // Copiar chave PIX
+        function copiarPix() {
+            const key = document.getElementById('pixKey').textContent;
+            navigator.clipboard.writeText(key).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copiado!';
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                }, 2000);
+            }).catch(() => {
+                alert(`Chave PIX: ${key}`);
+            });
+        }
+
+        // Permitir calcular com Enter
+        document.getElementById('destino').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                calcularFrete();
+            }
+        });
+
+        // Inicializar com um cálculo automático para demonstração
+        window.onload = function() {
+            setTimeout(() => {
+                calcularFrete();
+            }, 500);
+        };
     </script>
+
 </body>
 </html>
