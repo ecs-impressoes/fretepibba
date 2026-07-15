@@ -195,7 +195,52 @@ button:hover{
                 Após a concordância deste termo, serão exibidas as informações de pagamento.
             </p>
         </div>
+     <script>
 
+function calcularFrete(){
+
+    let km = parseFloat(document.getElementById("km").value);
+
+    if(isNaN(km) || km <= 0){
+        alert("Informe uma distância válida.");
+        return;
+    }
+
+    let valor = km * 2.10;
+
+    document.getElementById("resultado").innerHTML =
+        "Valor do Frete: R$ " +
+        valor.toLocaleString('pt-BR',{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+}
+
+</script>
+<script>
+
+function calcularFrete(){
+
+    let km = parseFloat(document.getElementById("km").value);
+
+    if(isNaN(km) || km <= 0){
+        alert("Informe uma distância válida.");
+        return;
+    }
+
+    let valor = km * 2.10;
+
+    document.getElementById("resultado").innerHTML =
+        "Valor do Frete: R$ " +
+        valor.toLocaleString('pt-BR',{
+            minimumFractionDigits:2,
+            maximumFractionDigits:2
+        });
+
+}
+
+</script>
         <div class="checkbox">
             <label>
                 <input type="checkbox" id="aceite">
