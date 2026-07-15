@@ -4,8 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🚚 PibbaWeb - Cálculo de Frete</title>
-    <!-- Google Maps API (carregamento assíncrono) -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDtpTj3uVXl5d7t2l8eZ8r9M0q5w1o3E4s&libraries=places&callback=initMap" async defer></script>
     <style>
         * {
             margin: 0;
@@ -168,6 +166,13 @@
         .calc-row button:active {
             transform: translateY(3px);
             box-shadow: 0 1px 0 #04161f;
+        }
+
+        .calc-row button:disabled {
+            opacity: 0.6;
+            transform: translateY(0);
+            box-shadow: 0 4px 0 #04161f;
+            cursor: not-allowed;
         }
 
         .resultado-box {
@@ -356,6 +361,14 @@
             display: inline-block;
         }
 
+        .erro {
+            color: #b33c1f;
+            background: #fde8e0;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+        }
+
         @media (max-width: 600px) {
             .container { padding: 20px; }
             .calc-row { flex-direction: column; align-items: stretch; }
@@ -385,7 +398,7 @@
     <!-- Área de cálculo -->
     <div class="calc-box">
         <div class="calc-row">
-            <label for="cepDestino">📬 Endereço do cliente</label>
+            <label for="enderecoDestino">📬 Endereço do cliente</label>
             <input type="text" id="enderecoDestino" placeholder="Ex: Av. Brasil, 500, Cubatão-SP" value="Av. Brasil, 500, Cubatão - SP" />
             <button id="calcularBtn">Calcular frete</button>
         </div>
@@ -423,7 +436,7 @@
             <strong>CHAVE</strong> 13988089754
         </div>
         <div id="qrcode-container"></div>
-        <button class="btn-pagar" id="btnPagar" disabled>🔓 Pagar com PIX</button>
+        <button class="btn-pagar" id="btnPagar" disabled>🔒 Aceite o termo para pagar</button>
         <div style="font-size:0.8rem; color:#2f5b70; margin-top:12px;">
             ⚡ Ao clicar em "Pagar", você confirma o valor e a chave PIX.
         </div>
@@ -453,90 +466,124 @@
         qrContainer.innerHTML = '';
         const chave = '13988089754';
         const payload = `PIX: ${chave} (chave telefone)`;
-        new QRCode(qrContainer, {
-            text: payload,
-            width: 160,
-            height: 160,
-            colorDark: '#003349',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.H
-        });
+        try {
+            new QRCode(qrContainer, {
+                text: payload,
+                width: 160,
+                height: 160,
+                colorDark: '#003349',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        } catch (e) {
+            qrContainer.innerHTML = '<p style="color:#666;">QR Code disponível</p>';
+        }
     }
 
-    // ========== GEOLOCALIZAÇÃO E CÁLCULO ==========
-    function calcularFrete() {
+    // ========== FUNÇÃO PARA CALCULAR DISTÂNCIA (HAVERSINE) ==========
+    function calcularDistancia(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Raio da Terra em km
+        const dLat = (lat2 - lat1) * Math.PI / 180;
+        const dLon = (lon2 - lon1) * Math.PI / 180;
+        const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    // ========== GEOCODING VIA NOMINATIM (OpenStreetMap) ==========
+    async function geocodificar(endereco) {
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(endereco)}&format=json&limit=1&countrycodes=BR`;
+        const response = await fetch(url, {
+            headers: {
+                'User-Agent': 'PibbaWeb-Frete/1.0'
+            }
+        });
+        const data = await response.json();
+        if (data && data.length > 0) {
+            return {
+                lat: parseFloat(data[0].lat),
+                lon: parseFloat(data[0].lon),
+                display_name: data[0].display_name
+            };
+        }
+        return null;
+    }
+
+    // ========== CALCULAR FRETE ==========
+    async function calcularFrete() {
         const destino = enderecoInput.value.trim();
         if (!destino) {
             alert('Por favor, insira o endereço do cliente.');
             return;
         }
 
-        // Mostra loading
+        // Desabilita botão e mostra loading
+        calcularBtn.disabled = true;
+        calcularBtn.textContent = '⏳ Calculando...';
         valorFreteSpan.textContent = '⏳';
-        detalheDistSpan.textContent = 'calculando...';
+        detalheDistSpan.textContent = 'buscando...';
 
-        // Usa a API do Google Maps para obter distância
-        const geocoder = new google.maps.Geocoder();
-        const service = new google.maps.DistanceMatrixService();
+        try {
+            // Geocodifica origem e destino
+            const [origemGeo, destinoGeo] = await Promise.all([
+                geocodificar(ORIGEM),
+                geocodificar(destino)
+            ]);
 
-        // Primeiro, geocodifica a origem para garantir coordenadas
-        geocoder.geocode({ address: ORIGEM }, (origResults, origStatus) => {
-            if (origStatus !== 'OK' || !origResults[0]) {
-                alert('Erro ao localizar sua loja. Verifique o endereço.');
-                valorFreteSpan.textContent = 'Erro';
-                detalheDistSpan.textContent = '—';
-                return;
+            if (!origemGeo) {
+                throw new Error('Não foi possível localizar sua loja. Verifique o endereço.');
             }
 
-            const origemLatLng = origResults[0].geometry.location;
+            if (!destinoGeo) {
+                throw new Error('Endereço de destino não encontrado. Verifique e tente novamente.');
+            }
 
-            // Agora geocodifica o destino
-            geocoder.geocode({ address: destino }, (destResults, destStatus) => {
-                if (destStatus !== 'OK' || !destResults[0]) {
-                    alert('Endereço de destino não encontrado. Verifique e tente novamente.');
-                    valorFreteSpan.textContent = 'Erro';
-                    detalheDistSpan.textContent = '—';
-                    return;
-                }
+            // Calcula distância
+            const distancia = calcularDistancia(
+                origemGeo.lat, origemGeo.lon,
+                destinoGeo.lat, destinoGeo.lon
+            );
 
-                const destinoLatLng = destResults[0].geometry.location;
+            // Arredonda para 1 casa decimal
+            const distanciaArredondada = Math.round(distancia * 10) / 10;
+            const frete = distanciaArredondada * TARIFA_KM;
 
-                // Usa Distance Matrix para obter distância em km
-                service.getDistanceMatrix({
-                    origins: [origemLatLng],
-                    destinations: [destinoLatLng],
-                    travelMode: google.maps.TravelMode.DRIVING,
-                    unitSystem: google.maps.UnitSystem.METRIC,
-                }, (response, status) => {
-                    if (status !== 'OK') {
-                        alert('Erro ao calcular a distância. Tente novamente.');
-                        valorFreteSpan.textContent = 'Erro';
-                        detalheDistSpan.textContent = '—';
-                        return;
-                    }
+            // Exibe resultados
+            valorFreteSpan.textContent = `R$ ${frete.toFixed(2).replace('.', ',')}`;
+            detalheDistSpan.textContent = `${distanciaArredondada.toFixed(1)} km`;
 
-                    const element = response.rows[0].elements[0];
-                    if (element.status === 'OK') {
-                        const distanciaKm = element.distance.value / 1000; // metros para km
-                        const frete = distanciaKm * TARIFA_KM;
+            // Se a distância for muito pequena, considera o mínimo de R$ 2,10
+            if (distanciaArredondada < 0.5) {
+                valorFreteSpan.textContent = `R$ 2,10`;
+                detalheDistSpan.textContent = `${distanciaArredondada.toFixed(1)} km (mínimo)`;
+            }
 
-                        valorFreteSpan.textContent = `R$ ${frete.toFixed(2).replace('.', ',')}`;
-                        detalheDistSpan.textContent = `${distanciaKm.toFixed(1)} km`;
-                    } else {
-                        alert('Não foi possível calcular a rota entre os endereços.');
-                        valorFreteSpan.textContent = 'Rota não disponível';
-                        detalheDistSpan.textContent = '—';
-                    }
-                });
-            });
-        });
+        } catch (error) {
+            valorFreteSpan.textContent = '❌ Erro';
+            detalheDistSpan.textContent = '—';
+            alert(error.message || 'Erro ao calcular o frete. Tente novamente.');
+        }
+
+        // Restaura botão
+        calcularBtn.disabled = false;
+        calcularBtn.textContent = 'Calcular frete';
     }
 
     // ========== INICIALIZAÇÃO ==========
-    function initMap() {
-        // Tenta calcular automaticamente ao carregar
-        setTimeout(calcularFrete, 800);
+    // Carrega QR Code
+    if (typeof QRCode !== 'undefined') {
+        gerarQRCode();
+    } else {
+        setTimeout(() => {
+            if (typeof QRCode !== 'undefined') gerarQRCode();
+        }, 1000);
     }
+
+    // Calcula automaticamente ao carregar
+    setTimeout(calcularFrete, 500);
 
     // ========== EVENTOS ==========
     calcularBtn.addEventListener('click', calcularFrete);
@@ -561,33 +608,11 @@
         }
         const frete = valorFreteSpan.textContent;
         alert(`✅ Pagamento PIX no valor de ${frete}\nChave: 13988089754\nQR Code gerado na tela.\n\n📦 Lembre-se: entrega apenas no endereço informado, sem escadaria/elevador.`);
-        gerarQRCode(); // regenera o QR para garantir
+        gerarQRCode();
     });
 
-    // ========== CARREGAR QR CODE ==========
-    // Aguarda a biblioteca QRCode
-    if (typeof QRCode !== 'undefined') {
-        gerarQRCode();
-    } else {
-        // Se não carregou, tenta novamente
-        setTimeout(() => {
-            if (typeof QRCode !== 'undefined') gerarQRCode();
-        }, 1000);
-    }
-
-    // Fallback: se a API do Maps não carregar
-    window.initMap = initMap;
-
-    // Se a API do Maps demorar, já deixa um cálculo inicial
-    setTimeout(() => {
-        if (!document.querySelector('.valor-frete')) return;
-        if (valorFreteSpan.textContent === '⏳') {
-            // Tenta calcular com o valor atual
-            calcularFrete();
-        }
-    }, 3000);
-
     console.log('🚚 PibbaWeb - Frete calculado com base na distância real (R$ 2,10/km)');
+    console.log('📍 Origem:', ORIGEM);
 </script>
 
 <!-- Biblioteca QRCode -->
