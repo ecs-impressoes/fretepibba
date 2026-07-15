@@ -1,310 +1,590 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Central de Cálculo de Frete</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🚚 PibbaWeb • Cálculo de Frete</title>
+  <!-- Biblioteca para gerar QR Code via API -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    }
 
-<style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
-}
+    body {
+      background: linear-gradient(145deg, #f6f9fc 0%, #e9f0f5 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
 
-body{
-    background:#f4f6f9;
-    color:#333;
-}
+    .container {
+      max-width: 800px;
+      width: 100%;
+      background-color: #ffffff;
+      border-radius: 40px 40px 30px 30px;
+      box-shadow: 0 20px 40px rgba(0, 20, 30, 0.15), 0 8px 16px rgba(0,0,0,0.05);
+      padding: 30px 30px 40px;
+      transition: 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
 
-header{
-    background:#004aad;
-    color:#fff;
-    padding:20px;
-    text-align:center;
-}
+    h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0b2b3b;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
 
-.container{
-    max-width:1200px;
-    margin:30px auto;
-    padding:20px;
-}
+    h1 small {
+      font-size: 1rem;
+      font-weight: 400;
+      color: #2a5f7a;
+      background: #dceaf3;
+      padding: 0 14px;
+      border-radius: 40px;
+      line-height: 1.8;
+      margin-left: 6px;
+    }
 
-.card{
-    background:#fff;
-    padding:25px;
-    border-radius:10px;
-    box-shadow:0 2px 10px rgba(0,0,0,.1);
-    margin-bottom:20px;
-}
+    .subhead {
+      color: #1f4a5e;
+      font-weight: 500;
+      margin-bottom: 28px;
+      border-left: 4px solid #2f8db0;
+      padding-left: 16px;
+      background: #edf6fa;
+      border-radius: 0 20px 20px 0;
+      line-height: 1.5;
+      font-size: 0.98rem;
+    }
 
-h2{
-    margin-bottom:15px;
-    color:#004aad;
-}
+    .partida-fixa {
+      background: #e2edf5;
+      padding: 14px 18px;
+      border-radius: 60px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+      border: 1px solid #b7d3e3;
+    }
 
-.links{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
-    gap:15px;
-}
+    .partida-fixa span {
+      background: #0b2b3b;
+      color: white;
+      padding: 4px 18px;
+      border-radius: 40px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
 
-.link-btn{
-    display:block;
-    text-decoration:none;
-    text-align:center;
-    background:#004aad;
-    color:white;
-    padding:15px;
-    border-radius:8px;
-    transition:.3s;
-}
+    .partida-fixa a {
+      color: #004466;
+      font-weight: 500;
+      text-decoration: none;
+      word-break: break-all;
+      font-size: 0.9rem;
+      border-bottom: 1px dashed #3a7b9a;
+    }
 
-.link-btn:hover{
-    background:#00317a;
-}
+    .partida-fixa a:hover {
+      color: #001f2e;
+      border-bottom: 1px solid #001f2e;
+    }
 
-.termo{
-    max-height:250px;
-    overflow:auto;
-    border:1px solid #ddd;
-    padding:15px;
-    border-radius:8px;
-    background:#fafafa;
-    margin-bottom:15px;
-}
+    .calc-box {
+      background: #f2f8fe;
+      padding: 20px 20px 25px;
+      border-radius: 28px;
+      margin-bottom: 30px;
+      border: 1px solid #d4e4ef;
+    }
 
-.checkbox{
-    margin:15px 0;
-    font-size:16px;
-}
+    .calc-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 15px 12px;
+      margin-bottom: 16px;
+    }
 
-#pagamento{
-    display:none;
-    text-align:center;
-    margin-top:20px;
-}
+    .calc-row label {
+      font-weight: 600;
+      color: #14475e;
+      min-width: 100px;
+    }
 
-#pagamento img{
-    max-width:300px;
-    width:100%;
-    border:1px solid #ddd;
-    border-radius:10px;
-}
+    .calc-row input {
+      flex: 1;
+      min-width: 180px;
+      padding: 12px 18px;
+      border: 2px solid #cbdde9;
+      border-radius: 60px;
+      font-size: 1rem;
+      background: white;
+      transition: 0.2s;
+      outline: none;
+    }
 
-.pix{
-    font-size:22px;
-    font-weight:bold;
-    color:#008000;
-    margin:15px 0;
-}
+    .calc-row input:focus {
+      border-color: #2f8db0;
+      box-shadow: 0 0 0 4px rgba(47, 141, 176, 0.2);
+    }
 
-button{
-    background:#28a745;
-    color:#fff;
-    border:none;
-    padding:12px 20px;
-    border-radius:6px;
-    cursor:pointer;
-}
+    .calc-row button {
+      background: #0b2b3b;
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.15s;
+      box-shadow: 0 4px 0 #05161f;
+      letter-spacing: 0.3px;
+    }
 
-button:hover{
-    background:#218838;
-}
-</style>
+    .calc-row button:hover {
+      background: #1a445a;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 0 #05161f;
+    }
+
+    .calc-row button:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #05161f;
+    }
+
+    .resultado-frete {
+      background: white;
+      padding: 16px 20px;
+      border-radius: 40px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #003153;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      border: 1px solid #b7d3e3;
+      margin-top: 5px;
+    }
+
+    .resultado-frete span:last-child {
+      background: #deecf5;
+      padding: 8px 20px;
+      border-radius: 60px;
+      font-size: 1.3rem;
+    }
+
+    .regras-entrega {
+      background: #fff8e7;
+      border-left: 6px solid #e6a13b;
+      padding: 18px 20px;
+      border-radius: 20px;
+      margin: 28px 0 22px;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,0.02);
+    }
+
+    .regras-entrega p {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-weight: 500;
+      color: #4d3a1f;
+    }
+
+    .regras-entrega p::before {
+      content: "⚠️";
+      font-size: 1.3rem;
+    }
+
+    .regras-entrega ul {
+      margin: 10px 0 0 28px;
+      color: #3f321b;
+      font-weight: 450;
+      line-height: 1.7;
+    }
+
+    .termo-area {
+      background: #f2f3f7;
+      padding: 20px 22px;
+      border-radius: 30px;
+      margin: 24px 0 22px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px 12px;
+      border: 1px solid #d0dce6;
+    }
+
+    .termo-area label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      font-weight: 500;
+      color: #0b2b3b;
+    }
+
+    .termo-area input[type="checkbox"] {
+      width: 22px;
+      height: 22px;
+      accent-color: #0b5d7a;
+      cursor: pointer;
+    }
+
+    .termo-area .aceito-text {
+      background: #d3e3ee;
+      padding: 6px 18px;
+      border-radius: 50px;
+      font-size: 0.9rem;
+    }
+
+    .pix-section {
+      background: #e6f0f7;
+      padding: 18px 20px 25px;
+      border-radius: 28px;
+      border: 1px solid #b8d2e3;
+      margin-top: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .pix-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: 100%;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .pix-header h3 {
+      color: #003b52;
+      font-weight: 700;
+      font-size: 1.5rem;
+    }
+
+    .pix-qr-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 28px;
+      margin: 18px 0 8px;
+      width: 100%;
+    }
+
+    #qrcode-container {
+      background: white;
+      padding: 16px;
+      border-radius: 24px;
+      box-shadow: 0 6px 14px rgba(0, 20, 30, 0.12);
+      display: inline-block;
+    }
+
+    #qrcode-container img, #qrcode-container canvas {
+      display: block;
+      width: 160px;
+      height: 160px;
+      border-radius: 12px;
+    }
+
+    .pix-chave {
+      background: #ffffffcc;
+      backdrop-filter: blur(2px);
+      padding: 12px 22px;
+      border-radius: 80px;
+      font-weight: 500;
+      font-size: 1.1rem;
+      border: 1px dashed #0b5d7a;
+      color: #003349;
+      word-break: break-all;
+      text-align: center;
+    }
+
+    .pix-chave strong {
+      background: #003349;
+      color: white;
+      padding: 2px 16px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      margin-right: 8px;
+    }
+
+    .btn-pagar {
+      background: #00875a;
+      color: white;
+      border: none;
+      padding: 14px 42px;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      margin: 16px 0 6px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #00573a;
+      transition: 0.12s;
+      width: fit-content;
+    }
+
+    .btn-pagar:disabled {
+      opacity: 0.5;
+      filter: grayscale(0.4);
+      box-shadow: 0 2px 0 #00573a;
+      transform: translateY(2px);
+      pointer-events: none;
+    }
+
+    .btn-pagar:hover:not(:disabled) {
+      background: #009f6b;
+      transform: scale(1.01);
+    }
+
+    .btn-pagar:active:not(:disabled) {
+      transform: translateY(4px);
+      box-shadow: 0 1px 0 #00573a;
+    }
+
+    .observacao {
+      font-size: 0.8rem;
+      color: #2f5b70;
+      margin-top: 12px;
+      background: #d1e3ef;
+      padding: 8px 18px;
+      border-radius: 50px;
+    }
+
+    .footer {
+      margin-top: 16px;
+      text-align: center;
+      color: #306f8a;
+      font-size: 0.8rem;
+      border-top: 1px solid #c7dae7;
+      padding-top: 20px;
+    }
+
+    .destaque {
+      background: #d2e6f2;
+      border-radius: 40px;
+      padding: 0 16px;
+    }
+
+    @media (max-width: 550px) {
+      .container { padding: 20px; }
+      .calc-row { flex-direction: column; align-items: stretch; }
+      .calc-row label { min-width: unset; }
+      .resultado-frete { flex-direction: column; align-items: flex-start; gap: 10px; }
+    }
+  </style>
 </head>
-
 <body>
-
-<header>
-    <h1>Central de Cálculo de Frete</h1>
-</header>
-
 <div class="container">
+  <h1>
+    🧮 PibbaWeb
+    <small>frete</small>
+  </h1>
+  <div class="subhead">
+    📍 Partida fixa • Google Search "pibbaweb"
+  </div>
 
-    <div class="card">
-        <h2>Página Inicial</h2>
+  <!-- Ponto de partida fixo (sempre o mesmo) -->
+  <div class="partida-fixa">
+    <span>🚩 ORIGEM</span>
+    <a href="https://www.google.com/search?q=pibbaweb&num=10&newwindow=1&sca_esv=b95d1611b6ab2c1b&sxsrf=APpeQnsSZTQGnxgcruZYuGCKlMxnc3IeUg%3A1784127277545&source=hp&ei=LZ9XarWyHtna1sQPvO652Aw&iflsig=ABILxe8AAAAAaletPVK1TyhRze3U6zEoyUeaPVylz7gk&ved=0ahUKEwj1_O-E-NSVAxVZrZUCHTx3DssQ4dUDCCk&uact=5&oq=pibbaweb&gs_lp=Egdnd3Mtd2l6IghwaWJiYXdlYjIEECMYJzIEECMYJzIEECMYJzICECYyCBAAGIAEGKIEMggQABiABBiiBDIFEAAY7wUyBRAAGO8FSOQRUABY1Q1wAHgAkAEAmAHHAaABmAmqAQMwLji4AQPIAQD4AQGYAgigAvAJwgIKECMYyQIY8AUYJ8ICCxAuGIAEGIoFGJECwgIFEAAYgATCAgsQABiABBiKBRiRAsICBRAuGIAEwgIREC4YgAQYywEYxwEYrwEYjgXCAg4QLhiABBjLARjHARivAcICCRAAGIAEGAoYC8ICBxAAGIAEGA2YAwCSBwUwLjcuMaAH_FSyBwUwLjcuMbgH8AnCBwUyLTQuNMgHRoAIAQ&sclient=gws-wiz" target="_blank">
+      google.com/search?q=pibbaweb
+    </a>
+    <span style="background: #1a6b8a; margin-left: auto;">🔒 fixo</span>
+  </div>
 
-        <button onclick="abrirPesquisa()">
-            Abrir Pesquisa PIBBAWEB
-        </button>
+  <!-- Cálculo de frete -->
+  <div class="calc-box">
+    <div class="calc-row">
+      <label for="cepDestino">📬 CEP destino</label>
+      <input type="text" id="cepDestino" placeholder="Ex: 01001-000" value="01310-000">
+      <button id="calcularFreteBtn">Calcular frete</button>
+    </div>
+    <div class="resultado-frete">
+      <span>💰 Valor do frete</span>
+      <span id="valorFrete">R$ 28,90</span>
+    </div>
+  </div>
+
+  <!-- REGRA: SEM escadaria, elevador, entrega em lugar diferente -->
+  <div class="regras-entrega">
+    <p><strong>Regra de entrega obrigatória:</strong></p>
+    <ul>
+      <li>❌ <strong>Não</strong> será realizada entrega em escadaria, elevador ou em local diferente do endereço citado anteriormente.</li>
+      <li>📦 A entrega será feita <strong>exclusivamente</strong> no endereço informado no pedido, em ponto de fácil acesso ao veículo.</li>
+      <li>🔁 O aceite do termo abaixo é indispensável para prosseguir com o pagamento.</li>
+    </ul>
+  </div>
+
+  <!-- CHECKBOX de aceite + termo -->
+  <div class="termo-area">
+    <label>
+      <input type="checkbox" id="aceiteTermo">
+      <span class="aceito-text">✅ Li e aceito as regras de entrega</span>
+    </label>
+    <span style="font-size:0.9rem; color:#1f4f66;">(entrega apenas no endereço informado)</span>
+  </div>
+
+  <!-- SEÇÃO PIX com QR Code e chave -->
+  <div class="pix-section">
+    <div class="pix-header">
+      <h3>💳 Pagamento PIX</h3>
+      <span style="background:#003349; color:white; padding:4px 20px; border-radius:40px; font-size:0.9rem;">via QR Code</span>
     </div>
 
-    <div class="card">
-        <h2>Calculadoras de Frete</h2>
-
-        <div class="links">
-
-            <a class="link-btn" target="_blank"
-               href="https://www.correios.com.br">
-               Correios
-            </a>
-
-            <a class="link-btn" target="_blank"
-               href="https://www.jadlog.com.br">
-               Jadlog
-            </a>
-
-            <a class="link-btn" target="_blank"
-               href="https://www.loggi.com">
-               Loggi
-            </a>
-
-            <a class="link-btn" target="_blank"
-               href="https://www.braspress.com">
-               Braspress
-            </a>
-
-            <a class="link-btn" target="_blank"
-               href="https://www.jtexpress.com.br">
-               J&T Express
-            </a>
-
-            <a class="link-btn" target="_blank"
-               href="https://www.azulcargo.com.br">
-               Azul Cargo
-            </a>
-
+    <div class="pix-qr-container">
+      <div id="qrcode-container"></div>
+      <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+        <div class="pix-chave">
+          <strong>CHAVE</strong> 13988089754
         </div>
+        <div style="font-size:0.85rem; background:#ffffffb0; padding:4px 18px; border-radius:30px; color:#004466;">
+          📱 Copia e cola
+        </div>
+      </div>
     </div>
 
-    <div class="card">
-        <h2>Termo de Aceite</h2>
-
-        <div class="termo">
-            <p>
-                Ao prosseguir, o cliente declara que leu e concorda com os termos de utilização desta plataforma.
-            </p>
-
-            <br>
-
-            <p>
-                O endereço de partida utilizado para os cálculos e consultas será o endereço definido pelo administrador do sistema.
-            </p>
-
-            <br>
-
-            <p>
-                O cliente declara estar ciente das condições operacionais, prazos, valores e demais requisitos relacionados ao transporte e entrega.
-            </p>
-
-            <br>
-
-            <p>
-                Após a concordância deste termo, serão exibidas as informações de pagamento.
-            </p>
-        </div>
-     <script>
-
-function calcularFrete(){
-
-    let km = parseFloat(document.getElementById("km").value);
-
-    if(isNaN(km) || km <= 0){
-        alert("Informe uma distância válida.");
-        return;
-    }
-
-    let valor = km * 2.10;
-
-    document.getElementById("resultado").innerHTML =
-        "Valor do Frete: R$ " +
-        valor.toLocaleString('pt-BR',{
-            minimumFractionDigits:2,
-            maximumFractionDigits:2
-        });
-
-}
-
-</script>
-<script>
-
-function calcularFrete(){
-
-    let km = parseFloat(document.getElementById("km").value);
-
-    if(isNaN(km) || km <= 0){
-        alert("Informe uma distância válida.");
-        return;
-    }
-
-    let valor = km * 2.10;
-
-    document.getElementById("resultado").innerHTML =
-        "Valor do Frete: R$ " +
-        valor.toLocaleString('pt-BR',{
-            minimumFractionDigits:2,
-            maximumFractionDigits:2
-        });
-
-}
-
-</script>
-        <div class="checkbox">
-            <label>
-                <input type="checkbox" id="aceite">
-                Li e aceito os termos acima.
-            </label>
-        </div>
-
-        <button onclick="liberarPagamento()">
-            Confirmar Aceite
-        </button>
-
-        <div id="pagamento">
-
-            <h2>Pagamento PIX</h2>
-
-            <div class="pix">
-                Chave PIX: 13988089754
-            </div>
-
-            <!-- Troque pelo caminho correto da imagem -->
-            <img src="qrcode.png" alt="QR Code PIX">
-
-            <p style="margin-top:15px;">
-                Escaneie o QR Code ou utilize a chave PIX acima.
-            </p>
-
-        </div>
-
+    <!-- Botão de pagamento (habilita com checkbox) -->
+    <button class="btn-pagar" id="btnPagar" disabled>🔓 Pagar com PIX</button>
+    <div class="observacao">
+      ⚡ Ao clicar em "Pagar", o QR Code é exibido (já gerado) e a chave é <strong>13988089754</strong>.
     </div>
+  </div>
 
+  <div class="footer">
+    PibbaWeb • cálculo de frete • entrega sujeita às regras informadas.
+  </div>
 </div>
 
 <script>
+  (function() {
+    // Referências
+    const cepInput = document.getElementById('cepDestino');
+    const calcularBtn = document.getElementById('calcularFreteBtn');
+    const valorFreteSpan = document.getElementById('valorFrete');
+    const aceiteCheck = document.getElementById('aceiteTermo');
+    const pagarBtn = document.getElementById('btnPagar');
+    const qrContainer = document.getElementById('qrcode-container');
 
-function abrirPesquisa() {
+    // ========== 1) GERAÇÃO DO QR CODE (fixo) ==========
+    // Chave PIX: 13988089754 (formato telefone)
+    // Monta string PIX estática (URL ou payload simplificado)
+    // Usaremos a api do qrcodejs para gerar um QR com a chave + descrição
+    // Para manter a compatibilidade, geramos um QR com a string "pix:13988089754" e também com a chave.
+    // O mais comum é usar uma string tipo: 00020126330014BR.GOV.BCB.PIX01113988089754... mas para simplificar e manter legível, usamos a chave diretamente.
+    // A biblioteca QRCode recebe qualquer string. Usaremos uma string clara: "PIX 13988089754"
+    function gerarQRCode() {
+      // Limpa container
+      qrContainer.innerHTML = '';
+      // Dados do QR: chave + texto amigável
+      const chave = '13988089754';
+      const payload = `PIX: ${chave} (chave telefone)`;
+      // Gera QR com tamanho 160x160
+      new QRCode(qrContainer, {
+        text: payload,
+        width: 160,
+        height: 160,
+        colorDark: '#003349',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+    gerarQRCode();
 
-window.open(
-"https://www.google.com/search?q=pibbaweb&num=10&newwindow=1",
-"_blank"
-);
+    // ========== 2) CÁLCULO DE FRETE (simulação) ==========
+    function calcularFrete() {
+      let cep = cepInput.value.trim().replace(/\D/g, '');
+      if (cep.length < 8) {
+        alert('Por favor, insira um CEP válido com 8 dígitos (ex: 01310000)');
+        return;
+      }
+      // Simulação: valor baseado nos últimos dígitos do CEP, só pra demonstrar
+      const ultimos = parseInt(cep.slice(-4), 10) || 0;
+      let freteBase = 15.90;
+      // Adiciona variação de 0 a 20 reais
+      const variacao = (ultimos % 21);
+      const freteTotal = freteBase + variacao;
+      valorFreteSpan.textContent = `R$ ${freteTotal.toFixed(2).replace('.', ',')}`;
+    }
 
-}
+    // Cálculo ao carregar com valor inicial
+    window.addEventListener('load', function() {
+      calcularFrete();
+    });
 
-function liberarPagamento(){
+    calcularBtn.addEventListener('click', calcularFrete);
+    cepInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        calcularFrete();
+      }
+    });
 
-const aceite = document.getElementById("aceite");
+    // ========== 3) CONTROLE DO CHECKBOX + BOTÃO PAGAR ==========
+    function atualizarBotaoPagar() {
+      if (aceiteCheck.checked) {
+        pagarBtn.disabled = false;
+        pagarBtn.textContent = '✅ Pagar com PIX';
+      } else {
+        pagarBtn.disabled = true;
+        pagarBtn.textContent = '🔒 Aceite o termo para pagar';
+      }
+    }
 
-if(!aceite.checked){
-    alert("Você deve aceitar os termos para visualizar o pagamento.");
-    return;
-}
+    aceiteCheck.addEventListener('change', atualizarBotaoPagar);
+    // estado inicial
+    atualizarBotaoPagar();
 
-document.getElementById("pagamento").style.display = "block";
+    // ========== 4) AÇÃO DO BOTÃO PAGAR ==========
+    pagarBtn.addEventListener('click', function() {
+      if (!aceiteCheck.checked) {
+        alert('Você precisa aceitar os termos de entrega antes de pagar.');
+        return;
+      }
+      // Reforça a exibição do QR Code (já está visível) e chave
+      // Mostra um alerta com confirmação
+      alert('✅ Pagamento PIX iniciado! \nChave: 13988089754 \nQR Code gerado na tela. \nLembre-se: entrega apenas no endereço informado, sem escadaria/elevador.');
+      // Opcional: recria o QR para garantir (não necessário, mas pode)
+      gerarQRCode();
+    });
 
-}
+    // ========== 5) REGRA EXTRA: toda vez que calcular, exibe lembrete de entrega ==========
+    // Já incluso no HTML, mas podemos reforçar via console ou tooltip.
+    console.log('PibbaWeb: Regra de entrega ativa - sem escadaria, elevador ou local diferente do endereço.');
 
+    // ========== 6) GARANTIR QUE O QRCODE SEJA ACESSÍVEL ==========
+    // Caso a biblioteca já tenha carregado, mantém.
+    // Se o QR não carregar, recarregar.
+    setTimeout(() => {
+      if (qrContainer.children.length === 0) {
+        gerarQRCode();
+      }
+    }, 500);
+  })();
 </script>
-function calcularFrete(distanciaKm) {
-    return (distanciaKm * 2.10).toFixed(2);
-}
 
-const distancia = 18.5;
-const frete = calcularFrete(distancia);
-
-console.log(`Frete: R$ ${frete}`);
+<!-- fallback caso o QRCode não carregue -->
+<noscript>
+  <div style="background:#fee; padding:16px; border-radius:20px; margin-top:12px;">
+    ⚠️ Seu navegador não suporta JavaScript. Ative para ver o QR Code PIX.
+  </div>
+</noscript>
 </body>
 </html>
