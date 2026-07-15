@@ -1,319 +1,258 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cálculo de Frete & Entrega Rápida</title>
-    <style>
-        :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --danger-color: #dc2626;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
-            --text-muted: #64748b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Central de Cálculo de Frete</title>
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, Helvetica, sans-serif;
+}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            line-height: 1.6;
-            padding: 20px;
-        }
+body{
+    background:#f4f6f9;
+    color:#333;
+}
 
-        .container {
-            max-width: 700px;
-            margin: 0 auto;
-        }
+header{
+    background:#004aad;
+    color:#fff;
+    padding:20px;
+    text-align:center;
+}
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+.container{
+    max-width:1200px;
+    margin:30px auto;
+    padding:20px;
+}
 
-        header h1 {
-            color: var(--primary-color);
-            font-size: 2rem;
-            margin-bottom: 10px;
-        }
+.card{
+    background:#fff;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 2px 10px rgba(0,0,0,.1);
+    margin-bottom:20px;
+}
 
-        header p {
-            color: var(--text-muted);
-        }
+h2{
+    margin-bottom:15px;
+    color:#004aad;
+}
 
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            margin-bottom: 24px;
-        }
+.links{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:15px;
+}
 
-        h2 {
-            font-size: 1.25rem;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-            color: #0f172a;
-        }
+.link-btn{
+    display:block;
+    text-decoration:none;
+    text-align:center;
+    background:#004aad;
+    color:white;
+    padding:15px;
+    border-radius:8px;
+    transition:.3s;
+}
 
-        .info-box {
-            background-color: #f1f5f9;
-            border-left: 4px solid var(--primary-color);
-            padding: 12px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            word-break: break-all;
-            margin-bottom: 20px;
-        }
+.link-btn:hover{
+    background:#00317a;
+}
 
-        .info-box a {
-            color: var(--primary-color);
-            text-decoration: none;
-            font-weight: 600;
-        }
+.termo{
+    max-height:250px;
+    overflow:auto;
+    border:1px solid #ddd;
+    padding:15px;
+    border-radius:8px;
+    background:#fafafa;
+    margin-bottom:15px;
+}
 
-        .info-box a:hover {
-            text-decoration: underline;
-        }
+.checkbox{
+    margin:15px 0;
+    font-size:16px;
+}
 
-        .rules-box {
-            background-color: #fef2f2;
-            border-left: 4px solid var(--danger-color);
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
+#pagamento{
+    display:none;
+    text-align:center;
+    margin-top:20px;
+}
 
-        .rules-box h3 {
-            color: var(--danger-color);
-            font-size: 1rem;
-            margin-bottom: 5px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+#pagamento img{
+    max-width:300px;
+    width:100%;
+    border:1px solid #ddd;
+    border-radius:10px;
+}
 
-        .rules-box p {
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
+.pix{
+    font-size:22px;
+    font-weight:bold;
+    color:#008000;
+    margin:15px 0;
+}
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+button{
+    background:#28a745;
+    color:#fff;
+    border:none;
+    padding:12px 20px;
+    border-radius:6px;
+    cursor:pointer;
+}
 
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-        }
-
-        input[type="text"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 1rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        input[type="text"]:focus, select:focus {
-            border-color: var(--primary-color);
-        }
-
-        .btn {
-            display: inline-block;
-            width: 100%;
-            background-color: var(--primary-color);
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
-            transition: background-color 0.2s;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background-color: var(--primary-hover);
-        }
-
-        .checkbox-container {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            background-color: #f8fafc;
-            padding: 15px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .checkbox-container input {
-            margin-top: 4px;
-            transform: scale(1.2);
-            cursor: pointer;
-        }
-
-        .checkbox-container span {
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-
-        /* Área de Pagamento (Escondida por padrão) */
-        #payment-section {
-            display: none;
-            text-align: center;
-            animation: fadeIn 0.4s ease-in-out forwards;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .pix-key-container {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-        }
-
-        .pix-key {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #166534;
-            letter-spacing: 1px;
-            margin: 5px 0;
-        }
-
-        .qr-code-img {
-            max-width: 250px;
-            width: 100%;
-            height: auto;
-            border: 4px solid #fff;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            margin-top: 15px;
-        }
-
-        /* Links para plataformas de Frete */
-        .freight-links {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .freight-btn {
-            background: #f1f5f9;
-            color: #334155;
-            padding: 10px;
-            text-align: center;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            border: 1px solid #e2e8f0;
-            transition: all 0.2s;
-        }
-
-        .freight-btn:hover {
-            background: #e2e8f0;
-            color: #0f172a;
-        }
-    </style>
+button:hover{
+    background:#218838;
+}
+</style>
 </head>
+
 <body>
 
-    <div class="container">
-        <header>
-            <h1>Portal de Frete & Entregas</h1>
-            <p>Consulte taxas de envio e realize seu pagamento de forma segura</p>
-        </header>
+<header>
+    <h1>Central de Cálculo de Frete</h1>
+</header>
 
-        <div class="card">
-            <h2>Endereço de Partida Fixo</h2>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px;">Todas as entregas partem exclusivamente deste local:</p>
-            <div class="info-box">
-                📍 <a href="https://www.google.com/search?q=pibbaweb&num=10&newwindow=1&sca_esv=b95d1611b6ab2c1b&sxsrf=APpeQnsSZTQGnxgcruZYuGCKlMxnc3IeUg%3A1784127277545&source=hp&ei=LZ9XarWyHtna1sQPvO652Aw&iflsig=ABILxe8AAAAAaletPVK1TyhRze3U6zEoyUeaPVylz7gk&ved=0ahUKEwj1_O-E-NSVAxVZrZUCHTx3DssQ4dUDCCk&uact=5&oq=pibbaweb&gs_lp=Egdnd3Mtd2l6IghwaWJiYXdlYjIEECMYJzIEECMYJzIEECMYJzICECYyCBAAGIAEGKIEMggQABiABBiiBDIFEAAY7wUyBRAAGO8FSOQRUABY1Q1wAHgAkAEAmAHHAaABmAmqAQMwLji4AQPIAQD4AQGYAgigAvAJwgIKECMYyQIY8AUYJ8ICCxAuGIAEGIoFGJECwgIFEAAYgATCAgsQABiABBiKBRiRAsICBRAuGIAEwgIREC4YgAQYywEYxwEYrwEYjgXCAg4QLhiABBjLARjHARivAcICCRAAGIAEGAoYC8ICBxAAGIAEGA2YAwCSBwUwLjcuMaAH_FSyBwUwLjcuMbgH8AnCBwUyLTQuNMgHRoAIAQ&sclient=gws-wiz" target="_blank">Clique aqui para ver a localização de partida (PIBBAWEB)</a>
-            </div>
+<div class="container">
+
+    <div class="card">
+        <h2>Página Inicial</h2>
+
+        <button onclick="abrirPesquisa()">
+            Abrir Pesquisa PIBBAWEB
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Calculadoras de Frete</h2>
+
+        <div class="links">
+
+            <a class="link-btn" target="_blank"
+               href="https://www.correios.com.br">
+               Correios
+            </a>
+
+            <a class="link-btn" target="_blank"
+               href="https://www.jadlog.com.br">
+               Jadlog
+            </a>
+
+            <a class="link-btn" target="_blank"
+               href="https://www.loggi.com">
+               Loggi
+            </a>
+
+            <a class="link-btn" target="_blank"
+               href="https://www.braspress.com">
+               Braspress
+            </a>
+
+            <a class="link-btn" target="_blank"
+               href="https://www.jtexpress.com.br">
+               J&T Express
+            </a>
+
+            <a class="link-btn" target="_blank"
+               href="https://www.azulcargo.com.br">
+               Azul Cargo
+            </a>
+
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Termo de Aceite</h2>
+
+        <div class="termo">
+            <p>
+                Ao prosseguir, o cliente declara que leu e concorda com os termos de utilização desta plataforma.
+            </p>
+
+            <br>
+
+            <p>
+                O endereço de partida utilizado para os cálculos e consultas será o endereço definido pelo administrador do sistema.
+            </p>
+
+            <br>
+
+            <p>
+                O cliente declara estar ciente das condições operacionais, prazos, valores e demais requisitos relacionados ao transporte e entrega.
+            </p>
+
+            <br>
+
+            <p>
+                Após a concordância deste termo, serão exibidas as informações de pagamento.
+            </p>
         </div>
 
-        <div class="card">
-            <h2>Calcular Valor do Frete</h2>
-            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">Utilize uma das ferramentas abaixo para cotar o valor do seu frete até o endereço de destino:</p>
-            
-            <div class="freight-links">
-                <a href="https://www.melhorenvio.com.br" target="_blank" class="freight-btn">Melhor Envio ➔</a>
-                <a href="https://www2.correios.com.br/sistemas/precosPrazos/" target="_blank" class="freight-btn">Correios ➔</a>
-            </div>
-        </div>
-
-        <div class="card">
-            <h2>Termos de Entrega Rígidos</h2>
-            
-            <div class="rules-box">
-                <h3>⚠️ REGRA DE SEGURANÇA OBRIGATÓRIA</h3>
-                <p>O entregador, em hipótese alguma, subirá escadarias, utilizará elevadores ou realizará entregas em locais ou andares diferentes do endereço térreo principal citado na partida.</p>
-            </div>
-
-            <label class="checkbox-container">
-                <input type="checkbox" id="agree-checkbox" onchange="togglePaymentSection()">
-                <span>Estou ciente e aceito as condições de entrega descritas acima e confirmo o valor cotado do frete.</span>
+        <div class="checkbox">
+            <label>
+                <input type="checkbox" id="aceite">
+                Li e aceito os termos acima.
             </label>
         </div>
 
-        <div class="card" id="payment-section">
-            <h2 style="color: #166534;">Pagamento via PIX</h2>
-            <p>Escaneie o QR Code ou utilize a chave PIX abaixo para efetuar o pagamento do seu frete:</p>
-            
-            <div class="pix-key-container">
-                <small style="color: #15803d; font-weight: bold; text-transform: uppercase;">Chave PIX (Celular):</small>
-                <div class="pix-key" id="pixKey">13988089754</div>
+        <button onclick="liberarPagamento()">
+            Confirmar Aceite
+        </button>
+
+        <div id="pagamento">
+
+            <h2>Pagamento PIX</h2>
+
+            <div class="pix">
+                Chave PIX: 13988089754
             </div>
 
-            <div style="margin: 20px 0;">
-                <p style="font-weight: 600; font-size: 0.95rem; margin-bottom: 10px;">QR Code para Escanear:</p>
-                <img src="qrcode.jpg" alt="QR Code PIX para pagamento" class="qr-code-img" onerror="this.src='https://via.placeholder.com/250?text=QR+Code+Indisponivel'">
-            </div>
-            
-            <p style="font-size: 0.85rem; color: var(--text-muted);">Após efetuar o pagamento, envie o comprovante para liberação imediata do seu envio.</p>
+            <!-- Troque pelo caminho correto da imagem -->
+            <img src="qrcode.png" alt="QR Code PIX">
+
+            <p style="margin-top:15px;">
+                Escaneie o QR Code ou utilize a chave PIX acima.
+            </p>
+
         </div>
 
     </div>
 
-    <script>
-        function togglePaymentSection() {
-            const checkbox = document.getElementById('agree-checkbox');
-            const paymentSection = document.getElementById('payment-section');
-            
-            if (checkbox.checked) {
-                paymentSection.style.display = 'block';
-                // Rola suavemente até a seção de pagamento
-                setTimeout(() => {
-                    paymentSection.scrollIntoView({ behavior: 'smooth' });
-                }, 100);
-            } else {
-                paymentSection.style.display = 'none';
-            }
-        }
-    </script>
+</div>
+
+<script>
+
+function abrirPesquisa() {
+
+window.open(
+"https://www.google.com/search?q=pibbaweb&num=10&newwindow=1",
+"_blank"
+);
+
+}
+
+function liberarPagamento(){
+
+const aceite = document.getElementById("aceite");
+
+if(!aceite.checked){
+    alert("Você deve aceitar os termos para visualizar o pagamento.");
+    return;
+}
+
+document.getElementById("pagamento").style.display = "block";
+
+}
+
+</script>
+
 </body>
 </html>
